@@ -10,10 +10,10 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-const KEY string = "forecast API KEY"
-const LAT string = "LATITUDE"
-const LONG string = "LONGITUDE"
-const SMTP string = "smtp.server"
+const USER string = "USER"
+const PASS string = "PASSWORD"
+const FROM string = "FROM EMAIL"
+const TO string = "TO EMAIL"
 const PORT int = 587
 const USER string = "USER"
 const PASS string = "PASSWORD"
@@ -21,13 +21,18 @@ const FROM string = "FROM EMAIL"
 const TO string = "TO EMAIL"
 const SUBJECT string = "Car Clean!! The Summary"
 
-func checkWeekDay(cDate time.Time) (result bool, days int, moon string) {
+type day_info struct {
+	result bool
+	moon   string
+}
+
+func checkWeekDay(cDate time.Time, cache_date map[string]day_info) (result bool, days int, moon string) {
 	result = true
 	days = 0
 	moon = ""
 	for i := 0; i < 7; i++ {
 		moon_tmp := ""
-		result, moon_tmp = checkHoursDay(cDate)
+		result, moon_tmp = checkHoursDay(cDate, cache_date)
 		if moon == "" {
 			moon = moon_tmp
 		}
@@ -42,9 +47,14 @@ func checkWeekDay(cDate time.Time) (result bool, days int, moon string) {
 	return
 }
 
-func checkHoursDay(cDate time.Time) (result bool, moon string) {
+func checkHoursDay(cDate time.Time, cache_date map[string]day_info) (result bool, moon string) {
 	result = true
 	moon = ""
+	if val, ok := cache_date[cDate.Format("2006-01-02")]; ok {
+		result = val.result
+		moon = val.moon
+		return
+	}
 	hoursList := [...]string{
 		"T07:00:00", "T10:00:00", "T12:00:00", "T13:00:00",
 		"T15:00:00", "T16:00:00", "T18:00:00", "T19:00:00"}
@@ -83,6 +93,7 @@ func checkHoursDay(cDate time.Time) (result bool, moon string) {
 			break
 		}
 	}
+	cache_date[cDate.Format("2006-01-02")] = day_info{result: result, moon: moon}
 	return
 }
 
@@ -101,12 +112,13 @@ func sendMail(text string) {
 }
 
 func main() {
+	cache_date := make(map[string]day_info)
 	cDate := time.Now()
 	// cDate = cDate.Add(-time.Hour * 24 * 7)
 	summary := ""
 	for i := 0; i < 7; i++ {
 		result := "NO"
-		r, d, m := checkWeekDay(cDate)
+		r, d, m := checkWeekDay(cDate, cache_date)
 		if r {
 			result = "OK"
 		}
