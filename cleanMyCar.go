@@ -10,10 +10,10 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
-const USER string = "USER"
-const PASS string = "PASSWORD"
-const FROM string = "FROM EMAIL"
-const TO string = "TO EMAIL"
+const KEY string = "forecast API KEY"
+const LAT string = "LATITUDE"
+const LONG string = "LONGITUDE"
+const SMTP string = "smtp.server"
 const PORT int = 587
 const USER string = "USER"
 const PASS string = "PASSWORD"
